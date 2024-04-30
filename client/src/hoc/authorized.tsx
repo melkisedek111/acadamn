@@ -1,3 +1,4 @@
+"use client"
 import Spinner from '@/components/spinner'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'

@@ -10,9 +10,8 @@ export class CreateExamCommand implements CommandHandler<TCreateExamParams, TExa
 
                 if (getExamByTitle) throw new Error("Exam title is already exists.");
 
-                
                 const getExamByDateAndTime = await examModel.GetExamByDateAndTime({ scheduleDate: params.scheduleDate, startTime: params.startTime, endTime: params.endTime });
-                if (getExamByDateAndTime) throw new Error("Subject day and time is overlapping.");
+                if (getExamByDateAndTime) throw new Error("Exam day and time is overlapping.");
 
                 const newExam = await examModel.CreateExam(params);
 

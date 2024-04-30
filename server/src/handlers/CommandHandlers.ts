@@ -1,4 +1,5 @@
 import { CreateExamCommand } from "../commands/CreateExam.command";
+import { CreateExamItem } from "../commands/CreateExamItem.command";
 import { CreateStudentIdentificationCommand } from "../commands/CreateStudentIdentification.command";
 import { CreateSubjectCommand } from "../commands/CreateSubject.command";
 import { CreateTaskCommand } from "../commands/CreateTask.command"; 
@@ -14,6 +15,7 @@ export const COMMAND_CLASSES = {
     UpdateSubjectCommand: "UpdateSubjectCommand",
     SetSubjectStatusCommand: "SetSubjectStatusCommand",
     CreateExamCommand: "CreateExamCommand",
+    CreateExamItem: "CreateExamItem",
 }
 
 export const CommandHandlers: Record<string, CommandHandler<any, any>> = {
@@ -24,4 +26,5 @@ export const CommandHandlers: Record<string, CommandHandler<any, any>> = {
     [COMMAND_CLASSES.UpdateSubjectCommand]: new UpdateSubjectCommand(),
     [COMMAND_CLASSES.SetSubjectStatusCommand]: new SetSubjectStatusCommand(),
     [COMMAND_CLASSES.CreateExamCommand]: new CreateExamCommand(),
+    [COMMAND_CLASSES.CreateExamItem]: new CreateExamItem(),
 };

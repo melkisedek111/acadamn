@@ -3,10 +3,15 @@ import { z, ZodError } from "zod";
 import { StatusCodes } from "http-status-codes";
 
 class ValidationMiddleware {
-	static ParameterValidation(schema: z.ZodObject<any, any>) {
+	static ParameterValidation(schema: z.ZodObject<any, any>, method: string = "POST") {
         return (request: Request, response: Response, next: NextFunction) => {
 			try {
-				schema.parse(request.body);
+				if(request.method.toLowerCase() === "get") {
+					schema.parse(request.query);
+				} else {
+					schema.parse(request.body);
+				}
+
 				next();
 			} catch (error) {
 				if (error instanceof ZodError) {

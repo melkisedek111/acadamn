@@ -17,6 +17,7 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import examRoute from "./routes/exam.routes";
 import examRouter from "./routes/exam.routes";
+import examItemRouter from "./routes/examItem.routes";
 
 // Create Express app
 const app = express();
@@ -72,6 +73,7 @@ app.use(bodyParser.json());
 // Routes
 app.use('/student-identification', studentIdentificationRouter);
 app.use('/exam', examRouter);
+app.use('/examItem', examItemRouter);
 app.use('/user', userRouter);
 app.use('/auth', authRouter);
 app.use('/subject', subjectRouter);

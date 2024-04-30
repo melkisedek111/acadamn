@@ -7,14 +7,13 @@ import { COMMAND_CLASSES } from "../handlers/CommandHandlers";
 import { TCreateExamParams, TExam } from "../types/types/exam.type";
 import { getUserProfile } from "../helpers/gerUserFromToken.helper";
 import { QUERY_CLASSES } from "../handlers/QueryHandlers";
+import { TCreateExamItemParams } from "../types/types/examItem.type";
 
-export class ExamController {
-	static async createExam(request: Request, response: Response) {
+export class ExamItemController {
+	static async createExamItem(request: Request, response: Response) {
 		try {
-			const userToken = getUserProfile(request);
-			const createExamParams = {...request.body, userId: userToken.id} as TCreateExamParams;
-			 
-			const exam = await mediator.sendCommand<TCreateExamParams, TExam>(COMMAND_CLASSES.CreateExamCommand, createExamParams);
+			const createExamItemParams = request.body as TCreateExamItemParams;
+			const exam = await mediator.sendCommand<TCreateExamItemParams, TExam>(COMMAND_CLASSES.CreateExamItem, createExamItemParams);
 			response.status(StatusCodes.CREATED).json(exam);
 		} catch (error: any) {
 			console.log(error.message);
@@ -22,10 +21,11 @@ export class ExamController {
 		}
 	}
 
-	static async getExams(request: Request, response: Response) {
+    static async getExamItems(request: Request, response: Response) {
 		try {
-			console.log(123123)
-			const exam = await mediator.sendQuery<undefined, any>(QUERY_CLASSES.GetExamQuery, undefined);
+			const queries = request.query;
+			const getExamItemsParams: { examId: number } = { examId: Number(queries.examId)}
+			const exam = await mediator.sendQuery<{ examId: number }, TExam>(QUERY_CLASSES.GetExamItemQuery, getExamItemsParams);
 			response.status(StatusCodes.CREATED).json(exam);
 		} catch (error: any) {
 			console.log(error.message);

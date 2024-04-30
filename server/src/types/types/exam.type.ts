@@ -17,4 +17,17 @@ export type TExam = {
 export type TCreateExamParams = Omit<TExam, "id" | "subject" | "isActive">;
 export type TGetExamByParams = Partial<Omit<TExam, "subject">>;
 
+export type TGetExams = Pick<TExam, "id" | "title" | "type" | "isActive" | "description"> & {
+    scheduleDate: string;
+    scheduleTime: string;
+    noOfItems: number;
+    duration: number;
+    subject: string;
+    studentCompleted: number;
+};
+
+export type TGetExamsWithCount = TExam & {
+    _count: { UserExam: number; ExamItem: number} 
+}
+
 export type TGetExamByDateAndTimeParams = Pick<TExam, "scheduleDate" | "startTime" | "endTime"> & { id?: number };

@@ -1,11 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import { prismaClient } from "../server";
 import PrismaClientHelper from "../db/prisma-client.helper";
-import {
-	TSubject,
-	TUpdateSubjectParams,
-} from "../types/types/subject.types";
-import { TCreateExamParams, TExam, TGetExamByDateAndTimeParams, TGetExamByParams } from "../types/types/exam.type";
+import { TCreateExamParams, TExam, TGetExamByDateAndTimeParams, TGetExamByParams, TGetExamsWithCount } from "../types/types/exam.type";
 
 class ExamModel extends PrismaClientHelper {
 	private prisma: PrismaClient;
@@ -14,6 +10,41 @@ class ExamModel extends PrismaClientHelper {
 		super();
 		this.prisma = prismaClient;
 	}
+
+	/**
+	 * This function is used to get the subject
+	 * Updated by: Mel Ubalde @ Friday, March 29 26, 2024 3:49 PM
+	 * @param params
+	 * @returns TUser| null
+	 */
+		async GetExams(): Promise<TGetExamsWithCount[]> {
+			return await this.prismaQueryHandler<TGetExamsWithCount[]>(async () => {
+				try {
+					return await this.prisma.exam.findMany({
+						include: {
+							subject: true,
+							_count: {
+								select: {
+									UserExam: {
+										where: {
+											status: "finished"
+										}
+									},
+									ExamItem: true
+								}
+							}
+						},
+						orderBy: [
+							{
+								id: "desc"
+							}
+						]
+					});
+				} catch {
+					throw new Error("Failed to get a list of exams");
+				}
+			}, "GetExams");
+		}
 
 	/**
 	 * This function is used to create new exam
@@ -45,7 +76,7 @@ class ExamModel extends PrismaClientHelper {
 	 */
 	async GetExamByParams(
 		params: TGetExamByParams
-	): Promise<TSubject | null> {
+	): Promise<TExam | null> {
 		return await this.prismaQueryHandler<Omit<TExam, "userId"> | null>(async () => {
 			try {
 				return await this.prisma.exam.findFirst({

@@ -13,4 +13,4 @@ import type { NextRequest } from 'next/server'
 //   }
 // }
  
-export const config = { matcher: ["/dashboard", "/subjects", "/logout"] };
+export const config = { matcher: ["/dashboard", "/subjects", "/exams"] };

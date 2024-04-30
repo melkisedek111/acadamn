@@ -11,10 +11,12 @@ type TFetchApiError = {
     }[]
 }
 
-export const fetchApi = async <TOutput>(url: string, options: RequestInit = {}): Promise<TOutput & TFetchApiError> => {
+export const fetchApi = async <TOutput>(url: string, options: RequestInit = {}): Promise<TOutput | TFetchApiError> => {
 	const backendUrl = process.env.ENDPOINT_URL + url;
+
     const session = await getSession();
-    let token = ""
+    let token = "";
+
     if(session) {
         const user = session.user;
         token = user.token;
@@ -23,28 +25,15 @@ export const fetchApi = async <TOutput>(url: string, options: RequestInit = {}):
     const request = await fetch(backendUrl, {
 		...options,
 		headers: {
-			...options.headers,
 			Authorization: `Bearer ${token}`,
             Accept: 'application/json',
             "Content-Type": "application/json",
+            ...options.headers,
 		},
         credentials: "same-origin",
 	});
 
     const response = await request.json();
-
-    if(response.error) {
-        const cookieStore = cookies();
-        // console.log(cookieStore.getAll())
-        // await fetch("http://localhost:3000/api/auth/logout", {
-        //     method: "GET",
-        //     headers: {
-        //         "Content-Type": "application/json"
-        //     }
-        // });
-        // revalidatePath("/login");
-        // redirect("/login")
-    }
 
     return response;
 };

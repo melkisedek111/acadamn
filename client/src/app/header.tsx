@@ -1,36 +1,16 @@
 "use client"
-import { ModeToggle } from "@/components/mode-toggle";
 import Image from "next/image";
 import Link from "next/link";
 
-import {
-    Avatar,
-    AvatarFallback,
-    AvatarImage,
-} from "@/components/ui/avatar"
-
-import { Button } from "@/components/ui/button"
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuGroup,
-    DropdownMenuItem,
-    DropdownMenuLabel,
-    DropdownMenuPortal,
-    DropdownMenuSeparator,
-    DropdownMenuShortcut,
-    DropdownMenuSub,
-    DropdownMenuSubContent,
-    DropdownMenuSubTrigger,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { signOut } from "next-auth/react";
 import UseUserSession from "@/hooks/useUserSession";
 import { getSession } from "@/lib/auth";
 import NavLinks from "@/components/nav-links";
 
 export function Header() {
     const { isLoggedIn, user } = UseUserSession();
+
+    // const session = await getSession();
+    // const isLoggedIn = !!session;
 
     return (
         <div className="border-b border-gray-300">
@@ -43,8 +23,8 @@ export function Header() {
                                 <Link href="/dashboard">
                                     Dashboard
                                 </Link>
-                                <Link href="/quizzes">
-                                    Quizzes
+                                <Link href="/exams">
+                                    Exams
                                 </Link>
                                 <Link href="/subjects">
                                     Subjects

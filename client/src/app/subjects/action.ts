@@ -56,10 +56,6 @@ export async function getSubjects() {
 		method: "GET",
 	});
 
-	if (subjects?.error) {
-		return [];
-	}
-
 	return subjects;
 }
 

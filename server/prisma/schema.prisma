@@ -31,6 +31,7 @@ model User {
   createdAt               DateTime              @default(now())
   updatedAt               DateTime              @updatedAt
   Exam                    Exam[]
+  UserExam                UserExam[]
 }
 
 model Subject {
@@ -48,20 +49,64 @@ model Subject {
 }
 
 model Exam {
-  id           Int      @id @default(autoincrement())
-  userId       Int
-  user         User     @relation(fields: [userId], references: [id])
-  subjectId    Int
-  subject      Subject  @relation(fields: [subjectId], references: [id])
-  description  String
-  title        String
-  scheduleDate DateTime
-  startTime    String
-  endTime      String
-  type         String
-  isActive     Boolean  @default(true)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id                 Int                  @id @default(autoincrement())
+  userId             Int
+  user               User                 @relation(fields: [userId], references: [id])
+  subjectId          Int
+  subject            Subject              @relation(fields: [subjectId], references: [id])
+  description        String
+  title              String
+  scheduleDate       DateTime
+  startTime          String
+  endTime            String
+  type               String
+  isActive           Boolean              @default(true)
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  UserExam           UserExam[]
+  ExamItem           ExamItem[]
+  UserExamAnswerItem UserExamAnswerItem[]
+}
+
+model UserExam {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  examId    Int
+  exam      Exam     @relation(fields: [examId], references: [id])
+  status    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ExamItem {
+  id                 Int                  @id @default(autoincrement())
+  itemCodeId         String?
+  hasCode            Boolean
+  code               String?
+  codeLanguage       String?
+  itemType           String
+  question           String
+  optionType         String
+  options            String[]
+  answers            String[]
+  examId             Int
+  exam               Exam                 @relation(fields: [examId], references: [id])
+  images              String[]
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  UserExamAnswerItem UserExamAnswerItem[]
+}
+
+model UserExamAnswerItem {
+  id         Int      @id @default(autoincrement())
+  answers    Json
+  examItemId Int
+  examItem   ExamItem @relation(fields: [examItemId], references: [id])
+  examId     Int
+  exam       Exam     @relation(fields: [examId], references: [id])
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 }
 
 model StudentIdentification {

@@ -3,7 +3,6 @@
 import { Button } from "@/components/ui/button"
 import {
     AlertDialog,
-    AlertDialogAction,
     AlertDialogCancel,
     AlertDialogContent,
     AlertDialogDescription,
@@ -13,13 +12,9 @@ import {
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-
 import { PlusIcon } from "@radix-ui/react-icons"
-
 import { CalendarIcon } from "@radix-ui/react-icons"
 import { format } from "date-fns"
-
 import { cn } from "@/lib/utils"
 import { Calendar } from "@/components/ui/calendar"
 
@@ -36,7 +31,6 @@ import { z } from "zod"
 import {
     Form,
     FormControl,
-    FormDescription,
     FormField,
     FormItem,
     FormLabel,
@@ -52,84 +46,120 @@ import {
 } from "@/components/ui/select"
 
 import { Textarea } from "@/components/ui/textarea"
-
-import { Checkbox } from "@/components/ui/checkbox"
-import { useEffect } from "react";
-
-const items = [
-    {
-        id: "monday",
-        label: "Monday",
-    },
-    {
-        id: "tuesday",
-        label: "Tuesday",
-    },
-    {
-        id: "wednesday",
-        label: "Wednesday",
-    },
-    {
-        id: "thursday",
-        label: "Thursday",
-    },
-    {
-        id: "friday",
-        label: "Friday",
-    },
-    {
-        id: "saturday",
-        label: "Saturday",
-    },
-    {
-        id: "sunday",
-        label: "Sunday",
-    },
-] as const
+import { useEffect, useState } from "react";
+import { createExam } from "./action";
+import { signOut } from "next-auth/react";
+import { useToast } from "@/components/ui/use-toast";
+import useGetSubjects from "@/hooks/useGetSubjects";
 
 const formSchema = z.object({
     title: z.string().min(1, {
-        message: "Quiz title is required.",
+        message: "Exam title is required.",
     }),
     description: z.string().min(1, {
-        message: "Quiz description is required.",
+        message: "Exam description is required.",
     }),
     subject: z.string().min(1, {
         message: "Please select a subject.",
     }),
-    scheduledDate: z.date({
-        required_error: "A date of quiz is required.",
+    scheduleDate: z.date({
+        required_error: "A date of exam is required.",
+    }),
+    type: z.string().min(1, {
+        message: "Exam type is required.",
     }),
     startTime: z.string().min(1, {
-        message: "Quiz start time is required.",
+        message: "Exam start time is required.",
     }),
     endTime: z.string().min(1, {
-        message: "Quiz end time is required.",
+        message: "Exam end time is required.",
     }),
-})
+});
+
+type TSubjectSelect = {
+    value: string;
+    label: string;
+}
 
 
-export function CreateQuizzesDialog() {
+export function CreateExamDialog() {
+    const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [listSubjects, setListSubjects] = useState<TSubjectSelect[]>([]);
+    const { subjects } = useGetSubjects();
+    const { toast } = useToast();
 
     // 1. Define your form.
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
-            title: "",
-            description: "",
-            subject: "",
-            scheduledDate: new Date(),
-            startTime: "",
-            endTime: ""
+            title: undefined,
+            description: undefined,
+            subject: undefined,
+            type: undefined,
+            scheduleDate: new Date(),
+            startTime: undefined,
+            endTime: undefined
         },
     })
 
-    // 2. Define a submit handler.
-    function onSubmit(values: z.infer<typeof formSchema>) {
-        // Do something with the form values.
-        // ✅ This will be type-safe and validated.
-        console.log(values)
+    async function onSubmit(values: z.infer<typeof formSchema>) {
+        try {
+            setIsLoading(true);
+
+            const { subject, ...otherValues } = values;
+            const response = await createExam({ subjectId: Number(subject), ...otherValues });
+
+            if ("error" in response) {
+
+                if (response.error === "Unauthenticated") {
+                    signOut();
+                    return;
+                }
+
+                for (const error of response?.details) {
+                    toast({
+                        variant: "destructive",
+                        title: "Create Exam Failed",
+                        description: error.message,
+                    })
+                }
+
+                return;
+            }
+
+            form.reset({
+                title: "",
+                description: "",
+                subject: "",
+                type: "",
+                scheduleDate: new Date(),
+                startTime: "",
+                endTime: ""
+            });
+            toast({
+                variant: "default",
+                title: "Exam Created!",
+                description: "Exam created successfully!",
+            })
+        } catch (error) {
+            console.log(error);
+        } finally {
+            setIsLoading(false);
+        }
     }
+
+    useEffect(() => {
+        const subjectArr = [];
+
+        for(const subject of subjects) {
+            subjectArr.push({
+                value: subject.id.toString(),
+                label: subject.name
+            })
+        }
+
+        setListSubjects(subjectArr);
+    }, [subjects])
 
     return (
         <AlertDialog onOpenChange={() => {
@@ -138,16 +168,16 @@ export function CreateQuizzesDialog() {
             <AlertDialogTrigger asChild>
                 <Button>
                     <PlusIcon className="mr-2" />
-                    Create Quiz
+                    Create Exam
                 </Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="">
                         <AlertDialogHeader>
-                            <AlertDialogTitle>Create Quiz Form</AlertDialogTitle>
+                            <AlertDialogTitle>Create Exam Form</AlertDialogTitle>
                             <AlertDialogDescription>
-                                Create a new set of quiz and its description.
+                                Create a new set of exam and its description.
                             </AlertDialogDescription>
                         </AlertDialogHeader>
                         <div className="grid grid-cols-1 gap-2 mt-5">
@@ -158,7 +188,7 @@ export function CreateQuizzesDialog() {
                                     <FormItem>
                                         <FormLabel>Title</FormLabel>
                                         <FormControl>
-                                            <Input placeholder="IS - 201 Basic Fundamentals of programming Quiz" {...field} />
+                                            <Input placeholder="IS - 201 Basic Fundamentals of programming exam" {...field} />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
@@ -183,16 +213,18 @@ export function CreateQuizzesDialog() {
                                 render={({ field }) => (
                                     <FormItem >
                                         <FormLabel>Subject</FormLabel>
-                                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                        <Select onValueChange={field.onChange} value={field.value}>
                                             <FormControl>
                                                 <SelectTrigger>
                                                     <SelectValue placeholder="Select the subject of the quiz." />
                                                 </SelectTrigger>
                                             </FormControl>
                                             <SelectContent>
-                                                <SelectItem value="m@example.com">m@example.com</SelectItem>
-                                                <SelectItem value="m@google.com">m@google.com</SelectItem>
-                                                <SelectItem value="m@support.com">m@support.com</SelectItem>
+                                                {
+                                                    listSubjects.map((item) => (
+                                                        <SelectItem key={item.label} value={item.value}>{item.label}</SelectItem>
+                                                    ))
+                                                }
                                             </SelectContent>
                                         </Select>
                                         <FormMessage />
@@ -201,7 +233,29 @@ export function CreateQuizzesDialog() {
                             />
                             <FormField
                                 control={form.control}
-                                name="scheduledDate"
+                                name="type"
+                                render={({ field }) => (
+                                    <FormItem >
+                                        <FormLabel>Type</FormLabel>
+                                        <Select onValueChange={field.onChange} value={field.value}>
+                                            <FormControl>
+                                                <SelectTrigger>
+                                                    <SelectValue placeholder="Select the type of the exam." />
+                                                </SelectTrigger>
+                                            </FormControl>
+                                            <SelectContent>
+                                                <SelectItem value="quiz">Quiz</SelectItem>
+                                                <SelectItem value="midterm">Midterm</SelectItem>
+                                                <SelectItem value="final">Final</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="scheduleDate"
                                 render={({ field }) => (
                                     <FormItem className="flex flex-col">
                                         <FormLabel>Scheduled Date</FormLabel>
@@ -230,7 +284,7 @@ export function CreateQuizzesDialog() {
                                                     selected={field.value}
                                                     onSelect={field.onChange}
                                                     disabled={(date) =>
-                                                        date > new Date() || date < new Date("1900-01-01")
+                                                        date < new Date()
                                                     }
                                                     initialFocus
                                                 />

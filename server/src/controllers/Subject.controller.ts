@@ -27,7 +27,6 @@ export class SubjectController {
 
 	static async getSubjects(request: Request, response: Response) {
 		try {
-			getUserProfile(request);
 			const subjects = await mediator.sendQuery<undefined, TGetSubject>(QUERY_CLASSES.GetSubjectQuery, undefined);
 			response.status(StatusCodes.OK).json(subjects);
 		} catch (error: any) {
