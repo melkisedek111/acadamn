@@ -16,15 +16,15 @@ const page = () => {
     const session = useSession();
     const router = useRouter();
     const [studentIdentification, setStudentIdentificationId] = useState<TStudentIdentification | undefined>(undefined);
-    console.log(session)
+
     if (session.data) {
         router.push("/dashboard");
     }
 
     return (
-        <main className="">
+        <main className="h-screen">
             {/* PAGE TITLE */}
-            <h1 className="text-3xl font-bold my-5">Create Account</h1>
+            <h1 className="text-3xl font-bold my-5 text-center">Create Account</h1>
             <div className="">
                 {
                     studentIdentification ? <CreateAccountForm setStudentIdentificationId={setStudentIdentificationId} studentId={studentIdentification.studentId} id={studentIdentification.id} /> : <CheckStudentForm setStudentIdentificationId={setStudentIdentificationId}/>

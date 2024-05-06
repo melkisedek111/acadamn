@@ -8,7 +8,7 @@ import ExamItemModel from "../models/ExamItem";
 export class GetExamItemQuery implements QueryHandler<{ examId: number }, TExamItem[]> {
 	async execute(params: { examId: number }): Promise<TExamItem[]> {
 		const examItemModel = new ExamItemModel();
-        const examItems = await examItemModel.GetExamItemsByParams({ examId: params.examId });
+        const examItems = await examItemModel.GetExamItemsByParams({ examId: params.examId, isDeleted: false });
         return examItems;
 	}
 }

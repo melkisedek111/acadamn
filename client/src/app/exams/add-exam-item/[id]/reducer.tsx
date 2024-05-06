@@ -1,7 +1,8 @@
 import { OPTION_TYPE, QUESTION_TYPE } from "@/constants/app.constants";
-import { ERROR_MESSAGE, TItem, TOptionOrAnswer } from "./item.card";
+import { ERROR_MESSAGE, TItem, TOptionOrAnswer } from "./useItemCard";
 
 export enum ActionTypes {
+    UPDATE_STATE = "UPDATE_STATE",
     ADD_OPTION = "ADD_OPTION",
     REMOVE_OPTION_OR_ANSWER = "REMOVE_OPTION_OR_ANSWER",
     OPTION_OR_ANSWER_VALUE = "OPTION_OR_ANSWER_VALUE",
@@ -10,19 +11,22 @@ export enum ActionTypes {
     SAVE_ITEM = "SAVE_ITEM",
     TEXTAREA_CHANGE_VALUE = "TEXTAREA_CHANGE_VALUE",
     ADD_ANSWER_BY_CHECKBOX = "ADD_ANSWER_BY_CHECKBOX",
+    ADD_ANSWER_BY_RADIO = "ADD_ANSWER_BY_RADIO",
     GET_IMAGE = "GET_IMAGE"
 }
 
 export type TItemAction =
+    { type: ActionTypes.UPDATE_STATE, payload?: { updatedState: TItem } } |
     { type: ActionTypes.ADD_OPTION, payload?: any } |
     { type: ActionTypes.REMOVE_OPTION_OR_ANSWER, payload: { value: string, index: number, key: string } } |
     { type: ActionTypes.OPTION_OR_ANSWER_VALUE, payload: { value: string | boolean, index: number, key: string } } |
     { type: ActionTypes.ADD_ANSWER_BY_CHECKBOX, payload: { value: string, checked: boolean } } |
+    { type: ActionTypes.ADD_ANSWER_BY_RADIO, payload: { value: string } } |
     { type: ActionTypes.TEXTAREA_CHANGE_VALUE, payload: { value: string } } |
     { type: ActionTypes.ADD_ANOTHER_ANSWER, payload?: any } |
     { type: ActionTypes.SAVE_ITEM, payload?: any } |
     { type: ActionTypes.SELECT_ON_CHANGE_VALUE, payload: { key: string, value: string } } |
-    { type: ActionTypes.GET_IMAGE, payload: { value: FileList } }
+    { type: ActionTypes.GET_IMAGE, payload: { value: FileList, imageSrc: string[] } }
 
 /**
  * This function is a reducer function that handle value for creating a Item
@@ -32,7 +36,6 @@ export type TItemAction =
  * @returns state TItem
  */
 export const ItemReducer = (state: TItem, action: TItemAction) => {
-
     const { type, payload } = action;
 
     const reducerObject = {
@@ -97,7 +100,7 @@ export const ItemReducer = (state: TItem, action: TItemAction) => {
             };
 
             // if option type is MULTIPLE_CHOICE then remove the answers are not checked by checkbox
-            if (currentState.optionType === OPTION_TYPE.MULTIPLE_CHOICE.value) {
+            if (currentState.optionType === OPTION_TYPE.MULTIPLE_CHOICE.value || currentState.optionType === OPTION_TYPE.SINGLE_CHOICE.value) {
                 const selectedKey = "answers";
                 filteredOptionOrAnswer[selectedKey] = currentState[selectedKey as keyof TItem].filter((option: TOptionOrAnswer, i: number) => option.value !== value);
             }
@@ -157,6 +160,12 @@ export const ItemReducer = (state: TItem, action: TItemAction) => {
 
             return { ...currentState, answers };
         },
+        [ActionTypes.ADD_ANSWER_BY_RADIO]: () => {
+            const currentState = { ...state };
+            const { value } = payload;
+            let answers: TOptionOrAnswer[] = [{ value, errorCode: "" }];
+            return { ...currentState, answers };
+        },
         [ActionTypes.SAVE_ITEM]: () => {
             const currentState = { ...state };
             currentState.errors.questionType = false;
@@ -213,14 +222,17 @@ export const ItemReducer = (state: TItem, action: TItemAction) => {
             }
 
             if (currentState.image?.length) {
+
                 for (const image of currentState.image) {
                     const selectedImage = image as File;
-
-                    if (!["image/jpeg", "image/jpg", "image/png"].includes(selectedImage.type) || selectedImage.size > 50000) {
-                        currentState.errors.image = true;
-                        break;
-                    } else {
-                        currentState.errors.image = false;
+                    
+                    if (image instanceof File) {
+                        if (!["image/jpeg", "image/jpg", "image/png"].includes(selectedImage.type) || selectedImage.size > 3000000) {
+                            currentState.errors.image = true;
+                            break;
+                        } else {
+                            currentState.errors.image = false;
+                        }
                     }
                 }
             }
@@ -229,9 +241,15 @@ export const ItemReducer = (state: TItem, action: TItemAction) => {
         },
         [ActionTypes.GET_IMAGE]: () => {
             const currentState = { ...state };
-            const { value } = payload;
+            const { value, imageSrc } = payload;
+            console.log({value, imageSrc})
             currentState.image = value;
+            currentState.readImageSource = imageSrc;
             return { ...currentState };
+        },
+        [ActionTypes.UPDATE_STATE]: () => {
+            const { updatedState } = payload;
+            return updatedState;
         }
     }
 

@@ -105,10 +105,13 @@ const UpdateSubjectFormDialog: React.FC<TUpdateSubjectFormDialogProps> = ({ subj
             setIsLoading(true);
             const response = await updateSubject(values);
 
-            if (response.error) {
+            if ("error" in response) {
 
                 if (response.error === "Unauthenticated") {
-                    signOut();
+                    signOut({
+                        redirect: false,
+                        callbackUrl: "/login"
+                    });
                     return;
                 }
 

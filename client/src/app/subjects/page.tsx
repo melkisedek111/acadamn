@@ -1,10 +1,19 @@
+"use server"
 import React from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import CreateSubjectFormDialog from './create-subject-form'
 import SubjectsTable from './subjects-table'
 import { unstable_noStore } from 'next/cache'
+import { Metadata } from 'next'
 
-const Subjects = () => {
+export async function generateMetadata(): Promise<Metadata> {
+    return {
+        title: "Subjects",
+    description: "List of your current subjects.",
+    }
+}
+
+const Subjects = async () => {
     unstable_noStore();
     
     return (

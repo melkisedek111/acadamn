@@ -17,7 +17,7 @@ export class AuthController {
 			);
 
 			const token = jwt.sign({ ...user }, process.env.JWT_SECRET!, {
-				expiresIn: "3h",
+				expiresIn: "2h",
 			});
 
 			if (!token) throw new Error("Failed to login.");

@@ -61,6 +61,5 @@ export const BarChartHero = () => (
         showLegend={true}
         className="h-[500px] mt-5"
         categories={['Number of threatened species - ']}
-        colors={['black']}
     />
 );

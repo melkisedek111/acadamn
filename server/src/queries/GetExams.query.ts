@@ -1,7 +1,6 @@
 import ExamModel from "../models/Exam";
-import SubjectModel from "../models/Subject";
 import { QueryHandler } from "../types/interfaces/QueryHandler";
-import { TExam, TGetExams } from "../types/types/exam.type";
+import { TGetExams } from "../types/types/exam.type";
 import moment from "moment";
 
 export class GetExamQuery implements QueryHandler<unknown, TGetExams[]> {
@@ -23,10 +22,13 @@ export class GetExamQuery implements QueryHandler<unknown, TGetExams[]> {
 				id: exam.id,
 				title: exam.title,
                 subject: exam.subject.name,
+				subjectId: exam.subject.id,
 				type: exam.type,
 				isActive: exam.isActive,
                 description: exam.description,
 				scheduleDate: date,
+				startTime: exam.startTime,
+				endTime: exam.endTime,
 				scheduleTime: `${startTime.format('hh:mm A')} - ${endTime.format('hh:mm A')}`,
 				noOfItems: exam._count.ExamItem,
 				studentCompleted: exam._count.UserExam,

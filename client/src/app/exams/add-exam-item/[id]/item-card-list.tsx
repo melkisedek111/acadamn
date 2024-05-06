@@ -1,15 +1,19 @@
-"use client"
+"use client";
 
 import React, { useEffect, useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { ArrowLeftIcon, PlusIcon } from '@radix-ui/react-icons'
 import Link from 'next/link'
-import ItemCard, { TItem } from './item.card'
-import { getExamItems, TExamItem } from './action'
+import ItemCard from './item-card'
+import { deleteExamItem, deleteSpecificExamItemImage, TExamItem } from './action'
+import { TItem } from './useItemCard'
+import { useToast } from '@/components/ui/use-toast'
+import { signOut } from 'next-auth/react'
+import useErrorHandler from '@/hooks/useErrorHandler';
 
-
-
-const AddQuizItem = ({ params }: { params: { id: string } }) => {
+const ItemCardList = (props: { examItems: TExamItem[], id: string }) => {
+    const { toast } = useToast();
+    const { handleNoError } = useErrorHandler();
     const [items, setItems] = useState<TItem[]>([]);
     const examItemRef = useRef<HTMLDivElement>(null);
     const [selectedItemCodeId, setSelectedItemCodeId] = useState<string | undefined>(undefined);
@@ -23,7 +27,6 @@ const AddQuizItem = ({ params }: { params: { id: string } }) => {
     }
 
     const handleAddNewItem = (): void => {
-
         const newItem: TItem = {
             isEdit: true,
             count: items.length + 1,
@@ -66,47 +69,12 @@ const AddQuizItem = ({ params }: { params: { id: string } }) => {
         setSelectedItemCodeId(undefined);
     }
 
-    useEffect(() => {
-        (async () => {
-            const examItems = await getExamItems(Number(params.id));
-            if (!("error" in examItems)) {
-
-                const existedItems: TItem[] = [];
-                for (const item of examItems) {
-                    existedItems.push({
-                        id: item.id,
-                        isEdit: false,
-                        count: existedItems.length + 1,
-                        itemCodeId: item.itemCodeId,
-                        questionType: item.itemType,
-                        question: item.question,
-                        hasCode: item.hasCode,
-                        code: item.code,
-                        codeLanguage: item.codeLanguage,
-                        optionType: item.optionType,
-                        options: item.options.map(i => ({ value: i, errorCode: "" })),
-                        answers: item.answers.map(i => ({ value: i, errorCode: "" })),
-                        image: item.images,
-                        errors: {
-                            questionType: false,
-                            question: false,
-                            code: false,
-                            codeLanguage: false,
-                            optionType: false,
-                            image: false,
-                        },
-                    })
-                }
-                setItems(existedItems)
-            }
-        })()
-    }, [])
-
     const handleUpdateSetItems = (item: TExamItem) => {
         const exitedItems = [...items];
         const selectedItems = exitedItems.find(thisItem => thisItem.itemCodeId === item.itemCodeId);
+
         if (selectedItems) {
-            console.log({ item })
+
             const modifiedItems = exitedItems.filter(thisItem => thisItem.itemCodeId !== item.itemCodeId);
             const updatedItem: TItem = {
                 id: item.id,
@@ -132,9 +100,107 @@ const AddQuizItem = ({ params }: { params: { id: string } }) => {
                 },
             }
 
-            setItems([...modifiedItems, updatedItem])
+            const sortedItems = [...modifiedItems, updatedItem].sort((a, b) => a.count! - b.count!);
+            setItems(sortedItems);
         }
     }
+
+    const handleDeleteExamItem = async (itemId: number, examId: number) => {
+        try {
+            if (itemId) {
+                const existedItems = JSON.parse(JSON.stringify([...items]));
+                const response = await deleteExamItem(itemId, examId);
+
+                if ("error" in response) {
+                    for (const error of response.details) {
+                        toast({
+                            variant: "destructive",
+                            title: "Delete Exam Item Failed",
+                            description: error.message,
+                        })
+                    }
+
+                    return;
+                }
+
+                const modifiedItems = [...existedItems].filter(thisItem => thisItem.id !== itemId).sort((a, b) => a.count! - b.count!);
+                setItems([...modifiedItems]);
+
+                toast({
+                    variant: "default",
+                    title: "Delete Exam Item Failed",
+                    description: "Exam Item has been deleted.",
+                })
+            }
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
+    const handleDeleteSpecificExamItemImage = async (id: number, imageName: string, examId: number) => {
+        const deletedImage = await deleteSpecificExamItemImage(id, imageName, examId);
+
+        const hasNoError = handleNoError(deletedImage, "Deleting Image");
+
+        if (hasNoError) {
+            const existedItems = JSON.parse(JSON.stringify([...items]));
+
+            const modifiedItems = existedItems.map((item: TItem)=> {
+                if (item.id === id) {
+                    const updateImages = item.image.filter((image: string) => image !== imageName);
+                    item.image = updateImages;
+                }
+
+                return item;
+            })
+
+            toast({
+                variant: "default",
+                description: "Image(s) has been updated",
+            }) 
+
+            setItems([...modifiedItems]);
+        }
+    }
+
+    const handleCancelNewExamItem = (itemCodeId: string) => {
+        const existedItems = JSON.parse(JSON.stringify([...items]));
+        const modifiedItems = [...existedItems].filter(thisItem => thisItem.itemCodeId !== itemCodeId);
+        setSelectedItemCodeId(undefined);
+        setItems([...modifiedItems]);
+    }
+
+    useEffect(() => {
+        (async () => {
+            const existedItems: TItem[] = [];
+            for (const item of props.examItems) {
+                existedItems.push({
+                    id: item.id,
+                    isEdit: false,
+                    count: existedItems.length + 1,
+                    itemCodeId: item.itemCodeId,
+                    questionType: item.itemType,
+                    question: item.question,
+                    hasCode: item.hasCode,
+                    code: item.code,
+                    codeLanguage: item.codeLanguage,
+                    optionType: item.optionType,
+                    options: item.options.map(i => ({ value: i, errorCode: "" })),
+                    answers: item.answers.map(i => ({ value: i, errorCode: "" })),
+                    image: item.images,
+                    errors: {
+                        questionType: false,
+                        question: false,
+                        code: false,
+                        codeLanguage: false,
+                        optionType: false,
+                        image: false,
+                    },
+                })
+            }
+            setItems(existedItems)
+        })()
+    }, [])
 
     useEffect(() => {
         if (examItemRef.current) {
@@ -163,17 +229,21 @@ const AddQuizItem = ({ params }: { params: { id: string } }) => {
                         {
                             items.map((item: TItem, index: number) => (
                                 <ItemCard
-                                    className={`itemCard-${item.itemCodeId} group/itemCard hover:border-green-500 transition duration-300 ease-in-out ${selectedItemCodeId !== item.itemCodeId && selectedItemCodeId !== undefined ? "filter blur-[2px] qweqwe" : ""}`}
+                                    className={`itemCard-${item.itemCodeId} group/itemCard hover:border-green-500 transition duration-300 ease-in-out ${selectedItemCodeId !== item.itemCodeId && selectedItemCodeId !== undefined ? "filter blur-[2px]" : ""}`}
                                     onMouseEnter={handleHoveredItemCard}
                                     onMouseLeave={handleUnHoveredItemCard}
-                                    key={Number(params.id) + index}
+                                    key={Number(props.id) + index}
                                     item={item} itemNumber={index}
-                                    examId={Number(params.id)}
+                                    examId={Number(props.id)}
                                     handleUpdateSetItems={handleUpdateSetItems}
+                                    handleDeleteExamItem={handleDeleteExamItem}
+                                    handleCancelNewExamItem={handleCancelNewExamItem}
+                                    handleDeleteSpecificExamItemImage={handleDeleteSpecificExamItemImage}
                                 />
                             ))
                         }
-                    </div>)
+                    </div>
+                )
                 }
             </div>
             <div className="fixed bottom-10 right-10">
@@ -189,4 +259,4 @@ const AddQuizItem = ({ params }: { params: { id: string } }) => {
     )
 }
 
-export default AddQuizItem
+export default ItemCardList

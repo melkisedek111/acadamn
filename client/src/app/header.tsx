@@ -4,7 +4,7 @@ import Link from "next/link";
 
 import UseUserSession from "@/hooks/useUserSession";
 import { getSession } from "@/lib/auth";
-import NavLinks from "@/components/nav-links";
+import NavLinks from "@/components/nav-link-dropdown";
 
 export function Header() {
     const { isLoggedIn, user } = UseUserSession();

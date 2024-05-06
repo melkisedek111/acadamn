@@ -20,6 +20,7 @@ import { useToast } from '@/components/ui/use-toast'
 import { ToastAction } from '@/components/ui/toast'
 import { checkStudentId } from './action'
 import { TStudentIdentification } from './page'
+import Link from 'next/link'
 
 const formSchema = z.object({
     studentId: z.string({
@@ -51,19 +52,21 @@ const CheckStudentForm = ({ setStudentIdentificationId }: TCheckStudentForm) => 
             setIsLoading(true);
             const response = await checkStudentId(values);
 
-            if (response?.error) {
-                for (const error of response.details) {
-                    toast({
-                        variant: "destructive",
-                        title: "Checking Student ID Failed!",
-                        description: error.message,
-                        action: <ToastAction altText="Try again">Try again</ToastAction>,
-                    })
+            if (response) {
+                if ("error" in response) {
+                    for (const error of response.details) {
+                        toast({
+                            variant: "destructive",
+                            title: "Checking Student ID Failed!",
+                            description: error.message,
+                            action: <ToastAction altText="Try again">Try again</ToastAction>,
+                        })
+                    }
+                    return;
                 }
-                return;
-            }
 
-            setStudentIdentificationId(response);
+                setStudentIdentificationId(response);
+            }
         } catch (error: any) {
             console.log(error);
             toast({
@@ -97,6 +100,9 @@ const CheckStudentForm = ({ setStudentIdentificationId }: TCheckStudentForm) => 
                         )}
                     />
                     <Button type="submit" disabled={isLoading}>Submit</Button>
+                    <Link href="/login" className="hover:text-primary">
+                        Have an account? Login Here.
+                    </Link>
                 </form>
             </Form>
         </Card>

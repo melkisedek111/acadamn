@@ -14,23 +14,34 @@ export type TUser = {
 	dateOfBirth: string;
 	studentIdentificationId: number;
 	email: string;
-	studentIdentification?: TStudentIdentification
+	studentIdentification?: TStudentIdentification;
 };
 
 export type TCreateUserParams = Omit<TUser, "id" | "studentIdentification">;
 
 export type TCreatedUser = Pick<
 	TUser,
-	"firstName" | "lastName" | "role" | "studentIdentificationId" | "email" | "studentIdentification"
+	| "firstName"
+	| "lastName"
+	| "role"
+	| "studentIdentificationId"
+	| "email"
+	| "studentIdentification"
 >;
 
 export type TLoginUserParams = {
 	studentId: string;
-	password: string
+	password: string;
 };
 export type TLoggedInUser = Pick<
 	TUser,
-	"firstName" | "lastName" | "role" | "studentIdentificationId" | "email" | "studentIdentification" | "id"
+	| "firstName"
+	| "lastName"
+	| "role"
+	| "studentIdentificationId"
+	| "email"
+	| "studentIdentification"
+	| "id"
 >;
 export type TTokenDetails = Pick<
 	TUser,
@@ -40,4 +51,32 @@ export type TTokenDetails = Pick<
 	exp: number;
 };
 
+export type TGetUsersParams = {
+	skip: number;
+	take: number;
+	yearLevel?: number;
+	blockId?: number;
+	fullNameOrStudentId?: string;
+};
 
+export type TGetUsers = {
+	id: number;
+	firstName: string;
+	middleName: string;
+	lastName: string;
+	role: string;
+	gender: string;
+	province: string;
+	municipality: string;
+	barangay: string;
+	email: string;
+	studentIdentification: {
+		yearLevel: number;
+		id: number;
+		studentId: string;
+		block: {
+			id: number;
+			name: string;
+		};
+	};
+};

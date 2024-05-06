@@ -147,6 +147,7 @@ export const AuthConfig = {
 	secret: process.env.NEXTAUTH_SECRET,
 	pages: {
 		signIn: "/login",
+		signOut: "/login"
 	},
 } satisfies AuthOptions;
 

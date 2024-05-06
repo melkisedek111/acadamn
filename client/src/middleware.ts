@@ -1,5 +1,6 @@
+import { NextRequest, NextResponse } from "next/server";
+
 export { default } from "next-auth/middleware";
-import type { NextRequest } from 'next/server'
  
 // export function middleware(request: NextRequest) {
 //   const currentUser = request.cookies.get('currentUser')?.value
@@ -12,5 +13,7 @@ import type { NextRequest } from 'next/server'
 //     return Response.redirect(new URL('/login', request.url))
 //   }
 // }
+
+
  
-export const config = { matcher: ["/dashboard", "/subjects", "/exams"] };
+export const config = { matcher: [ "/dashboard", "/subjects", "/exams", "/logout", "/exams/add-exam-item/[id]", "/my-students"] };

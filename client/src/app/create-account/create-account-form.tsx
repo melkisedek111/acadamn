@@ -141,24 +141,26 @@ const CreateAccountForm = ({ studentId, id: studentIdentificationId, setStudentI
 
             const response = await createUserAccount(params);
 
-            if (response.error) {
-                for (const error of response.details) {
-                    toast({
-                        variant: "destructive",
-                        title: "Checking Student ID Failed!",
-                        description: error.message,
-                        action: <ToastAction altText="Try again">Try again</ToastAction>,
-                    })
+            if(response) {
+                if ("error" in response) {
+                    for (const error of response.details) {
+                        toast({
+                            variant: "destructive",
+                            title: "Checking Student ID Failed!",
+                            description: error.message,
+                            action: <ToastAction altText="Try again">Try again</ToastAction>,
+                        })
+                    }
+                    return;
                 }
-                return;
+    
+                setStudentIdentificationId(undefined);
+                toast({
+                    variant: "default",
+                    title: "Account Created!",
+                    description: "Account created successfully!",
+                })
             }
-
-            setStudentIdentificationId(undefined);
-            toast({
-                variant: "default",
-                title: "Account Created!",
-                description: "Account created successfully!",
-            })
         } catch (error) {
             console.log(error);
         } finally {

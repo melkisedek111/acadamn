@@ -1,10 +1,7 @@
 import { getSession } from "@/lib/auth";
-import { signOut } from "next-auth/react";
-import { revalidatePath } from "next/cache";
-import { cookies } from 'next/headers';
-import { redirect, RedirectType } from "next/navigation";
+import { redirect } from "next/navigation";
 
-type TFetchApiError = {
+export type TFetchApiError = {
     error: string;
     details: {
         message: string
@@ -34,6 +31,16 @@ export const fetchApi = async <TOutput>(url: string, options: RequestInit = {}):
 	});
 
     const response = await request.json();
+
+    if(response) {
+        if (typeof response === "object") {
+            if("error" in response) {
+                if (response.error === "Unauthenticated") {
+                    redirect("/logout");
+                }
+            }
+        }
+    }
 
     return response;
 };

@@ -22,11 +22,13 @@ import {
 import Image from "next/image";
 import { BarChartHero } from "./bar-chart";
 import { getSession } from "@/lib/auth";
+import CustomBreadcrumb from "@/components/custom-breadcrumb";
 
 export default async function Dashboard() {
 
     return (
-        <main className="">
+        <div className="">
+            <CustomBreadcrumb />
             {/* PAGE TITLE */}
             <h1 className="text-3xl font-bold my-5">Dashboard</h1>
             {/* Cards */}
@@ -143,6 +145,6 @@ export default async function Dashboard() {
                     </Card>
                 </div>
             </div>
-        </main>
+        </div>
     );
 }

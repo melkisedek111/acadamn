@@ -1,6 +1,6 @@
 "use client";
 
-import React, { ComponentProps, useEffect, useReducer, useRef, useState } from 'react'
+import React, { ComponentProps, useEffect, useState } from 'react'
 import { Button } from "@/components/ui/button"
 import {
     Card,
@@ -26,215 +26,54 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import Editor from "@monaco-editor/react";
 import { PlusIcon, TrashIcon } from '@radix-ui/react-icons';
 import { Checkbox } from '@/components/ui/checkbox';
-import { createExamItem, TCreateExamItemParams, TExamItem } from './action';
-import { useToast } from '@/components/ui/use-toast';
-import { signOut } from 'next-auth/react';
-
 import ItemCardView from './item-card-view';
 import { CODE_LANGUAGES, OPTION_TYPE, QUESTION_TYPE } from '@/constants/app.constants';
-import { ActionTypes, ItemReducer } from './reducer';
-
-export type TErrorCode = "" | "EMPTY" | "VALUE_EXISTS";
-
-export type TOptionOrAnswer = {
-    value: string;
-    errorCode: TErrorCode;
-}
-
-export type TItemError = {
-    questionType: boolean;
-    question: boolean;
-    code: boolean;
-    codeLanguage: boolean;
-    optionType: boolean;
-    image: boolean;
-}
-
-export type TItem = {
-    isEdit?: boolean;
-    id?: number;
-    count?: number;
-    itemCodeId: string;
-    questionType: string;
-    question: string;
-    hasCode: boolean;
-    code: string;
-    codeLanguage: string;
-    optionType: string;
-    options: TOptionOrAnswer[];
-    answers: TOptionOrAnswer[];
-    image?: any;
-    errors: TItemError
-}
-
-const ITEM_ERROR_MESSAGE = {
-    questionType: "Question type is required.",
-    question: "Question question is required.",
-    code: "Code is required",
-    codeLanguage: "Language is required.",
-    optionType: "Question option type is required.",
-    image: "Image should be JPEG, JPG or PNG format and must be a 5MB max file size."
-}
-
-export const ERROR_MESSAGE: {
-    EMPTY: {
-        code: TErrorCode;
-        message: string;
-    },
-    VALUE_EXISTS: {
-        code: TErrorCode;
-        message: string;
-    }
-} = {
-    EMPTY: {
-        code: "EMPTY",
-        message: "This field value is empty."
-    },
-    VALUE_EXISTS: {
-        code: "VALUE_EXISTS",
-        message: "The field value is already exists."
-    }
-}
+import useItemCard, { ERROR_MESSAGE, HTMLInputAndTextAreaElement, ITEM_ERROR_MESSAGE, TItem, TOptionOrAnswer, TUseItemCardProps } from './useItemCard';
+import { TExamItem } from './action';
+import {
+    Carousel,
+    CarouselContent,
+    CarouselItem,
+    CarouselNext,
+    CarouselPrevious,
+} from "@/components/ui/carousel"
+import Image from 'next/image';
+import { PhotoProvider, PhotoView } from 'react-photo-view';
 
 type TItemCardProps = ComponentProps<"div"> & {
     item: TItem;
     itemNumber: number;
     examId: number;
     handleUpdateSetItems: (item: TExamItem) => void;
-    className?: string;
-}
+    handleDeleteExamItem: (itemId: number, examId: number) => void;
+    handleCancelNewExamItem: (itemCodeId: string) => void;
+    handleDeleteSpecificExamItemImage: (id: number, imageName: string, examId: number) => void;
+};
 
-const ItemCard = ({ item: itemProp, itemNumber: itemNumberProp, examId: examIdProp, handleUpdateSetItems: handleUpdateSetItemsProp, ...otherProps }: TItemCardProps) => {
+const ItemCard = ({ item: itemProp, itemNumber, examId, handleUpdateSetItems, handleDeleteExamItem, handleCancelNewExamItem, handleDeleteSpecificExamItemImage, ...otherProps }: TItemCardProps) => {
     const props = {
         item: itemProp,
-        itemNumber: itemNumberProp,
-        examId: examIdProp,
-        handleUpdateSetItems: handleUpdateSetItemsProp
-    }
-    const [item, dispatch] = useReducer(ItemReducer, props.item);
-    const [isEdit, setIsEdit] = useState<boolean | undefined>(props.item.isEdit);
-    const optionRef = useRef<HTMLInputElement[]>([]);
-    const { toast } = useToast();
-    type HTMLInputAndTextAreaElement = HTMLInputElement & HTMLTextAreaElement;
-    const answerRef = useRef<HTMLInputAndTextAreaElement[]>([]);
-
-    const handleValueChange = (value: string, key: string) => {
-        optionRef.current = [];
-        answerRef.current = [];
-        dispatch({ type: ActionTypes.SELECT_ON_CHANGE_VALUE, payload: { key, value } });
-    }
-
-    const handleAddOption = () => dispatch({ type: ActionTypes.ADD_OPTION });
-    const handleAddAnotherAnswer = () => dispatch({ type: ActionTypes.ADD_ANOTHER_ANSWER });
-    const handleTextAreaChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => dispatch({ type: ActionTypes.TEXTAREA_CHANGE_VALUE, payload: { value: event.target.value } });
-    const handleCheckBoxChange = (checked: boolean, value: string) => dispatch({ type: ActionTypes.ADD_ANSWER_BY_CHECKBOX, payload: { checked, value } });
-    const handleGetImage = (event: React.ChangeEvent<HTMLInputElement>) => {
-        if (event.target.files?.length) {
-            dispatch({ type: ActionTypes.GET_IMAGE, payload: { value: event.target.files } });
-        }
-    }
-
-    const handleRemoveOptionOrAnswer = (value: string, index: number, key: string) => {
-        if (optionRef.current.length) {
-            optionRef.current = optionRef.current.filter((_, i) => i !== index);
-            optionRef.current[optionRef.current?.length - 1]?.focus();
-        }
-
-        if (answerRef.current.length) {
-            answerRef.current = answerRef.current.filter((_, i) => i !== index);
-            answerRef.current[answerRef.current?.length - 1]?.focus();
-        }
-
-        dispatch({ type: ActionTypes.REMOVE_OPTION_OR_ANSWER, payload: { index, value, key } });
+        itemNumber,
+        examId,
+        handleUpdateSetItems,
     };
 
-    const handleOptionChangeValue = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>, index: number, key: string) => {
-        const value = event.target.value;
-        dispatch({ type: ActionTypes.OPTION_OR_ANSWER_VALUE, payload: { value, index, key } });
-    }
-
-    const handleSaveItem = async () => {
-        dispatch({ type: ActionTypes.SAVE_ITEM });
-        const currentItem = item as TItem;
-
-        if (!Object.values(currentItem.errors).includes(true) && !currentItem.answers.find(item => item.errorCode) && !currentItem.options.find(item => item.errorCode)) {
-
-            const itemDetails: TCreateExamItemParams = {
-                itemCodeId: currentItem.itemCodeId,
-                examId: props.examId,
-                itemType: currentItem.questionType,
-                question: currentItem.question,
-                hasCode: currentItem.hasCode,
-                code: currentItem.code,
-                codeLanguage: currentItem.codeLanguage,
-                optionType: currentItem.optionType,
-                options: currentItem.options.map(item => item.value),
-                answers: currentItem.answers.map(item => item.value)
-            }
-            const formData = new FormData();
-
-            for (let index = 0; currentItem.image?.length > index; index++) {
-                formData.append(`image-${index + 1}`, currentItem.image[index]);
-            }
-
-            const images = {
-                imageCount: currentItem.image?.length || 0,
-                formData
-            }
-
-            const response = await createExamItem(itemDetails, images);
-
-            if ("error" in response) {
-
-                if (response.error === "Unauthenticated") {
-                    signOut();
-                    return;
-                }
-
-                for (const error of response.details) {
-                    toast({
-                        variant: "destructive",
-                        title: "Create Exam Item Failed",
-                        description: error.message,
-                    })
-                }
-
-                return;
-            }
-
-            props.handleUpdateSetItems(response);
-
-            toast({
-                variant: "default",
-                title: "Exam Item Created!",
-                description: "Exam Item created successfully!",
-            })
-        }
-    }
-
-    const handleEditItem = () => {
-        setIsEdit(!isEdit)
-    }
-
-    useEffect(() => {
-        // statement for focusing the input for both answer and options when remove or add
-        if (item.answers.length && answerRef.current) {
-            answerRef.current[answerRef.current?.length - 1]?.scrollIntoView({ behavior: 'smooth' });
-            answerRef.current[answerRef.current?.length - 1]?.focus();
-        }
-    }, [item.answerRef])
-
-    useEffect(() => {
-        // statement for focusing the input for both answer and options when remove or add
-        if (item.options.length && optionRef.current) {
-            optionRef.current[optionRef.current?.length - 1]?.scrollIntoView({ behavior: 'smooth' });
-            optionRef.current[optionRef.current?.length - 1]?.focus();
-        }
-    }, [item.optionRef])
-
-    useEffect(() => {
-        setIsEdit(props.item.isEdit)
-    }, [props.item])
+    const {
+        item, isEdit, optionRef, answerRef,
+        handleValueChange, handleAddOption,
+        handleAddAnotherAnswer,
+        handleTextAreaChange,
+        handleCheckBoxChange,
+        handleGetImage,
+        handleRemoveOptionOrAnswer,
+        handleOptionChangeValue,
+        handleSaveItem,
+        handleUpdateExamItem,
+        handleEditItem,
+        handleRadioChange
+    } = useItemCard(props);
+    
+    const isSomeChanges = JSON.stringify(itemProp) === JSON.stringify(item);
 
     return (
         <div>
@@ -266,7 +105,7 @@ const ItemCard = ({ item: itemProp, itemNumber: itemNumberProp, examId: examIdPr
                             <div className="flex flex-col gap-2">
                                 <Label htmlFor="question">Question</Label>
                                 <div className="overlay rounded-md overflow-hidden w-full h-full shadow-4xl">
-                                    <Textarea value={item.question} placeholder="Type your question here." id="question" rows={5} onChange={handleTextAreaChange} />
+                                    <Textarea disabled={!item.questionType} value={item.question} placeholder="Type your question here." id="question" rows={5} onChange={handleTextAreaChange} />
                                 </div>
                                 {
                                     item.errors.question && <small className="text-red-500">{ITEM_ERROR_MESSAGE.question}</small>
@@ -333,7 +172,7 @@ const ItemCard = ({ item: itemProp, itemNumber: itemNumberProp, examId: examIdPr
                                 <Select
                                     value={item.optionType}
                                     onValueChange={(value) => handleValueChange(value, "optionType")}>
-                                    <SelectTrigger className="">
+                                    <SelectTrigger disabled={!item.questionType}>
                                         <SelectValue placeholder="Select a Option Type" />
                                     </SelectTrigger>
                                     <SelectContent id="optionTypes">
@@ -397,6 +236,9 @@ const ItemCard = ({ item: itemProp, itemNumber: itemNumberProp, examId: examIdPr
                                                     ))
                                                 }
                                             </div>
+                                            {
+                                                item.options.length ? null : <small className="text-red-500">No input options(s) yet.</small>
+                                            }
                                             <div className="flex justify-end">
                                                 <Button
                                                     size={"sm"}
@@ -406,27 +248,23 @@ const ItemCard = ({ item: itemProp, itemNumber: itemNumberProp, examId: examIdPr
                                             </div>
                                         </div>
                                         <div className="flex flex-col gap-2">
-                                            <Label htmlFor="optionTypes">Answer</Label>
+                                            <Label htmlFor="optionTypes">Choose Answer(s)</Label>
+                                            <RadioGroup className="grid grid-cols-3 gap-4" value={item.answers[0]?.value} onValueChange={handleRadioChange}>
+                                                {
+                                                    item.options.length ? item.options.map((option: TOptionOrAnswer, index: number) => (
+                                                        option.value ? <div className="flex items-center space-x-2" key={`single_choice_${item.optionType}-${index}`}>
+                                                            <RadioGroupItem
+                                                                value={option.value}
+                                                                id={`single_choice_radio-${index}`}
+                                                                disabled={!option.value || !!option.errorCode}
+                                                            />
+                                                            <Label htmlFor={`single_choice_radio-${index}`} className={`cursor-pointer ${item.answers[0]?.value === option.value ? "text-green-500" : ""}`}>{option.value}</Label>
+                                                        </div> : null
+                                                    )) : null
+                                                }
+                                            </RadioGroup>
                                             {
-                                                item.answers.map((answer: TOptionOrAnswer, index: number) => (
-                                                    <div key={`singleChoice_answer-${answer.value}`}>
-                                                        <Input
-                                                            id={`singleChoice-answer-${index}`}
-                                                            ref={el => {
-                                                                if (answerRef?.current && el) {
-                                                                    answerRef.current.push(el as HTMLInputAndTextAreaElement);
-                                                                }
-                                                            }}
-                                                            value={answer.value}
-                                                            onChange={(event) => handleOptionChangeValue(event, index, "answers")}
-                                                            type="text"
-                                                            placeholder={`Please enter you answer here.`}
-                                                        />
-                                                        {
-                                                            answer.errorCode && <small className="text-red-500">{ERROR_MESSAGE[answer.errorCode].message}</small>
-                                                        }
-                                                    </div>
-                                                ))
+                                                item.answers[0]?.value ? null : <small className="text-red-500">No selected answers(s) yet.</small>
                                             }
                                         </div>
                                     </>
@@ -492,6 +330,9 @@ const ItemCard = ({ item: itemProp, itemNumber: itemNumberProp, examId: examIdPr
                                                     })
                                                 }
                                             </div>
+                                            {
+                                                item.options.length ? null : <small className="text-red-500">No input options(s) yet.</small>
+                                            }
                                             <div className="flex justify-end">
                                                 <Button size={"sm"} onClick={handleAddOption} ><PlusIcon className="mr-2" /> Add Option</Button>
                                             </div>
@@ -599,7 +440,7 @@ const ItemCard = ({ item: itemProp, itemNumber: itemNumberProp, examId: examIdPr
                                         <div className="flex flex-col gap-2">
                                             <Label htmlFor="optionTypes">Answer(s)</Label>
                                             <div className="pl-2">
-                                                <RadioGroup className='flex gap-6'>
+                                                <RadioGroup className='flex gap-6' value={item.answers[0]?.value} onValueChange={handleRadioChange}>
                                                     <div className="flex items-center space-x-2">
                                                         <RadioGroupItem value="true" id={`${item.optionType}-true`} />
                                                         <Label htmlFor={`${item.optionType}-true`}>True</Label>
@@ -610,6 +451,9 @@ const ItemCard = ({ item: itemProp, itemNumber: itemNumberProp, examId: examIdPr
                                                     </div>
                                                 </RadioGroup>
                                             </div>
+                                            {
+                                                item.answers.length ? null : <small className="text-red-500">No selected answers(s) yet.</small>
+                                            }
                                         </div>
                                     </>
                                 )
@@ -648,18 +492,108 @@ const ItemCard = ({ item: itemProp, itemNumber: itemNumberProp, examId: examIdPr
                             <hr />
                             <div className="flex flex-col gap-2">
                                 <Label htmlFor="optionTypes">Image</Label>
-                                <Input id="picture" type="file" multiple onChange={handleGetImage} />
+                                <Input disabled={!item.questionType} id="picture" type="file" multiple onChange={handleGetImage} />
                                 {
                                     item.errors.image && (<small className="text-red-500">{ITEM_ERROR_MESSAGE.image}</small>)
+                                }
+                                {
+                                    item?.readImageSource?.length ? (
+                                        <div className="flex items-start justify-center">
+                                            <PhotoProvider>
+                                                <Carousel className="w-full max-w-sm" opts={{
+                                                    align: "start",
+                                                }}>
+                                                    <CarouselContent className="-ml-1">
+                                                        {item?.readImageSource?.map((image: string, index: number) => (
+                                                            <CarouselItem key={`carousel-${index}`} className="pl-1 md:basis-1/2 lg:basis-1/3">
+                                                                <div className="p-1 group relative">
+                                                                    <PhotoView src={image}>
+                                                                        <Card>
+                                                                            <CardContent className="flex aspect-square items-center justify-center p-1" >
+                                                                                <Image
+                                                                                    src={image}
+                                                                                    alt={"img"}
+                                                                                    width={500}
+                                                                                    height={500}
+                                                                                    className="object-cover w-full h-full"
+                                                                                />
+                                                                            </CardContent>
+                                                                        </Card>
+                                                                    </PhotoView>
+                                                                </div>
+                                                            </CarouselItem>
+                                                        ))}
+                                                    </CarouselContent>
+                                                    <CarouselPrevious />
+                                                    <CarouselNext />
+                                                </Carousel>
+                                            </PhotoProvider>
+                                        </div>
+                                    ) : null
+                                }
+                                {
+                                    item?.id && item?.image?.length ? (
+                                        <div>
+                                            <p>Existed Images</p>
+                                            <div className='flex items-start justify-center'>
+                                                <PhotoProvider>
+                                                    <Carousel className="w-full max-w-sm" opts={{
+                                                        align: "start",
+                                                    }}>
+                                                        <CarouselContent className="-ml-1">
+                                                            {props.item.image.map((image: string, index: number) => (
+                                                                <CarouselItem key={`carousel-${index}`} className="pl-1 md:basis-1/2 lg:basis-1/3">
+                                                                    <div className="p-1 group relative">
+                                                                        <button className="hidden group-hover:block absolute top-2 right-2 p-1 rounded-md shadow-md bg-red-500 text-white">
+                                                                            <TrashIcon />
+                                                                        </button>
+                                                                        <PhotoView src={`${process.env.NEXT_PUBLIC_IMAGE_URL}/exam-item/${image}`}>
+                                                                            <Card>
+                                                                                <CardContent className="flex aspect-square items-center justify-center p-1" >
+                                                                                    <Image
+                                                                                        src={`${process.env.NEXT_PUBLIC_IMAGE_URL}/exam-item/${image}`}
+                                                                                        alt={"img"}
+                                                                                        width={500}
+                                                                                        height={500}
+                                                                                        className="object-cover w-full h-full"
+                                                                                    />
+
+                                                                                </CardContent>
+                                                                            </Card>
+                                                                        </PhotoView>
+                                                                    </div>
+                                                                </CarouselItem>
+                                                            ))}
+                                                        </CarouselContent>
+                                                        <CarouselPrevious />
+                                                        <CarouselNext />
+                                                    </Carousel>
+                                                </PhotoProvider>
+                                            </div>
+                                        </div>
+                                    ) : null
                                 }
                             </div>
                         </CardContent>
                         <CardFooter className="flex justify-between">
-                            <Button onClick={handleEditItem} variant="outline">Cancel</Button>
-                            <Button onClick={handleSaveItem}>Save</Button>
+                            {
+                                item?.id ? <Button onClick={handleEditItem} variant="outline">Cancel</Button> : <Button onClick={() => { handleCancelNewExamItem(item.itemCodeId) }} variant="outline">Cancel</Button>
+                            }
+                            {
+                                item?.id && isEdit ? <Button disabled={isSomeChanges} onClick={handleUpdateExamItem}>Update</Button> : <Button onClick={handleSaveItem}>Save</Button>
+                            }
+
                         </CardFooter>
                     </Card>
-                ) : <ItemCardView item={item} itemId={props.item.id} examId={props.examId} handleEditItem={handleEditItem} {...otherProps}/>
+                ) : <ItemCardView
+                    item={props.item}
+                    itemId={props.item.id}
+                    examId={props.examId}
+                    handleEditItem={handleEditItem}
+                    handleDeleteExamItem={handleDeleteExamItem}
+                    handleDeleteSpecificExamItemImage={handleDeleteSpecificExamItemImage}
+                    {...otherProps}
+                />
             }
         </div>
     )

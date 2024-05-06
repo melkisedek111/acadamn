@@ -28,24 +28,26 @@ model User {
   studentIdentificationId Int                   @unique()
   studentIdentification   StudentIdentification @relation(fields: [studentIdentificationId], references: [id])
   email                   String                @unique()
-  createdAt               DateTime              @default(now())
-  updatedAt               DateTime              @updatedAt
   Exam                    Exam[]
   UserExam                UserExam[]
+  createdAt               DateTime              @default(now())
+  updatedAt               DateTime              @updatedAt
+  InstructorSubjects      InstructorSubjects[]
 }
 
 model Subject {
-  id          Int      @id @default(autoincrement())
-  name        String
-  code        String
-  description String
-  day         String[]
-  startTime   String
-  endTime     String
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  Exam        Exam[]
+  id                 Int                  @id @default(autoincrement())
+  name               String
+  code               String
+  description        String
+  day                String[]
+  startTime          String
+  endTime            String
+  isActive           Boolean              @default(true)
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  Exam               Exam[]
+  InstructorSubjects InstructorSubjects[]
 }
 
 model Exam {
@@ -92,7 +94,9 @@ model ExamItem {
   answers            String[]
   examId             Int
   exam               Exam                 @relation(fields: [examId], references: [id])
-  images              String[]
+  images             String[]
+  isDeleted          Boolean              @default(false)
+  isActive           Boolean              @default(true)
   createdAt          DateTime             @default(now())
   updatedAt          DateTime             @updatedAt
   UserExamAnswerItem UserExamAnswerItem[]
@@ -112,8 +116,29 @@ model UserExamAnswerItem {
 model StudentIdentification {
   id           Int      @id @default(autoincrement())
   studentId    String   @unique()
+  blockId      Int?
+  block        Block?   @relation(fields: [blockId], references: [id])
+  yearLevel    Int?
   isRegistered Boolean
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
   User         User?
+}
+
+model Block {
+  id                    Int                     @id @default(autoincrement())
+  name                  String
+  createdAt             DateTime                @default(now())
+  updatedAt             DateTime                @updatedAt
+  StudentIdentification StudentIdentification[]
+}
+
+model InstructorSubjects {
+  id        Int      @id @default(autoincrement())
+  subjectId Int
+  subject   Subject  @relation(fields: [subjectId], references: [id])
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

@@ -1,7 +1,7 @@
 import { PrismaClient, ExamItem } from "@prisma/client";
 import { prismaClient } from "../server";
 import PrismaClientHelper from "../db/prisma-client.helper";
-import { TCreateExamItemParams, TExamItem, TGetExamItemByParams } from "../types/types/examItem.type";
+import { TCreateExamItemParams, TExamItem, TGetExamItemByParams, TUpdateExamItemParams } from "../types/types/examItem.type";
 
 class ExamItemModel extends PrismaClientHelper {
 	private prisma: PrismaClient;
@@ -48,7 +48,7 @@ class ExamItemModel extends PrismaClientHelper {
 		}, "GetExamItemByParams");
 	}
 
-		/**
+	/** sone-097
 	 * This function is used to get the exam item by params
 	 * Updated by: Mel Ubalde @ Friday, March 29 26, 2024 3:49 PM
 	 * @param params
@@ -69,6 +69,50 @@ class ExamItemModel extends PrismaClientHelper {
 				throw new Error("Failed to get a exam items");
 			}
 		}, "GetExamItemsByParams");
+	}
+
+		/**
+	 * This function is used to get the subject
+	 * Updated by: Mel Ubalde @ Friday, March 29 26, 2024 3:49 PM
+	 * @param params
+	 * @returns TUser| null
+	 */
+	async UpdateExamItem(params: TUpdateExamItemParams): Promise<TExamItem> {
+		const { id, ...otherParams } = params;
+		return await this.prismaQueryHandler<TExamItem>(async () => {
+			try {
+				return await this.prisma.examItem.update({
+					where: {
+						id: params.id
+					},
+					data: {
+						...otherParams
+					}
+				});
+			} catch {
+				throw new Error("Failed to update of exam item");
+			}
+		}, "UpdateExamItem");
+	}
+
+	/**
+	 * This function is used to get the subject
+	 * Updated by: Mel Ubalde @ Friday, March 29 26, 2024 3:49 PM
+	 * @param params
+	 * @returns TUser| null
+	 */
+	async DeleteExamItem(params: { id: number }): Promise<TExamItem> {
+		return await this.prismaQueryHandler<TExamItem>(async () => {
+			try {
+				return await this.prisma.examItem.delete({
+					where: {
+						id: params.id
+					},
+				});
+			} catch {
+				throw new Error("Failed to delete exam item");
+			}
+		}, "DeleteExamItem");
 	}
 }
 

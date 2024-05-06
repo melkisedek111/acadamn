@@ -112,7 +112,10 @@ export function CreateExamDialog() {
             if ("error" in response) {
 
                 if (response.error === "Unauthenticated") {
-                    signOut();
+                    signOut({
+                        redirect: false,
+                        callbackUrl: "/login"
+                    });
                     return;
                 }
 

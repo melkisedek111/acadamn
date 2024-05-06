@@ -94,13 +94,14 @@ const CreateSubjectFormDialog = () => {
             setIsLoading(true);
             const response = await createSubject(values);
 
-            if (response.error) {
-
+            if ("error" in response) {
                 if(response.error === "Unauthenticated") {
-                    signOut();
+                    signOut({
+                        redirect: false,
+                        callbackUrl: "/login"
+                    });
                     return;
                 }
-
                 for (const error of response.details) {
                     toast({
                         variant: "destructive",

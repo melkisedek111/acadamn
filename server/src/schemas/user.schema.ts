@@ -64,3 +64,15 @@ export const loginUserSchema = z.object({
 		})
 		.trim(),
 });
+
+export const getUsersSchema = z.object({
+	skip: z.number({
+		required_error: "Pagination is required.",
+	}),
+	take: z.number({
+		required_error: "Pagination is required.",
+	}),
+	yearLevel: z.number().optional(),
+	blockId: z.number().optional(),
+	fullNameOrStudentId: z.string().trim().optional(),
+});

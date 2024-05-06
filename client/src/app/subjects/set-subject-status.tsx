@@ -32,10 +32,13 @@ export function SetSubjectStatusDialog({ subjectId, isActive}: TSetSubjectStatus
             setIsLoading(true);
             const response = await setSubjectStatus({id: subjectId});
 
-            if (response.error) {
+            if ("error" in response) {
 
                 if(response.error === "Unauthenticated") {
-                    signOut();
+                    signOut({
+                        redirect: false,
+                        callbackUrl: "/login"
+                    });
                     return;
                 }
 

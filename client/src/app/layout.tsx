@@ -2,15 +2,12 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider"
-import Header from "./header";
 import { AuthProvider } from "./AuthProvider";
-import { Suspense } from "react";
-import Loading from "./dashboard/loading";
 import NextTopLoader from "nextjs-toploader"
 import { Toaster as SonnerToaster } from "sonner";
 import { Toaster } from "@/components/ui/toaster";
-import { headers } from "next/headers";
-import { getSession } from "next-auth/react";
+import PageContainer from "@/components/page-container";
+
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -21,7 +18,6 @@ export const metadata: Metadata = {
 
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-    const session = getSession();
 
     return (
         <>
@@ -36,12 +32,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                             enableSystem
                             disableTransitionOnChange
                         >
-                            <div className="">
-                                <Header />
-                                <div className="p-0 container mx-auto">
-                                    {children}
-                                </div>
-                            </div>
+                            <PageContainer>
+                                {children}
+                            </PageContainer>
                             <SonnerToaster />
                             <Toaster />
                         </ThemeProvider>

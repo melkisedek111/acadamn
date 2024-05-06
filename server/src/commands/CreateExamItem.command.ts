@@ -5,7 +5,7 @@ import { TCreateExamItemParams, TExamItem } from "../types/types/examItem.type";
 export class CreateExamItem implements CommandHandler<TCreateExamItemParams, TExamItem> {
 	async execute(params: TCreateExamItemParams): Promise<TExamItem> {
         const examItemModel = new ExamItemModel();
-        
+
         const getExamItemByQuestion = await examItemModel.GetExamItemByParams({question: params.question});
         if(getExamItemByQuestion) throw new Error("Item question already exists.");
 

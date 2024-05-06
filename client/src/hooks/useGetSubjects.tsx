@@ -9,15 +9,9 @@ const useGetSubjects = () => {
 
     useEffect(() => {
         const getAllSubjects = async () => {
-            const response = await getSubjects();
-
-            if (response?.error === "Unauthenticated" || response?.error === "Unauthorized") {
-                signOut();
-                router.push("/login");
-                return;
-            }
-
-            setSubjects(response);
+            const response = await getSubjects() || [];
+            const fetchedSubjects = response || [];
+            setSubjects(fetchedSubjects);
         }
 
         getAllSubjects();

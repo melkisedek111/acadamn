@@ -23,10 +23,11 @@ import {
     FormLabel,
     FormMessage,
 } from "@/components/ui/form"
-import { usePathname, useRouter } from "next/navigation";
+import { redirect, usePathname, useRouter } from "next/navigation";
 import { ToastAction } from "@/components/ui/toast";
 import { useToast } from "@/components/ui/use-toast";
 import { useEffect, useState } from "react";
+import Link from "next/link";
 
 const formSchema = z.object({
     studentId: z.string({
@@ -136,8 +137,11 @@ const LoginForm = () => {
                             />
                         </div>
                     </CardContent>
-                    <CardFooter>
+                    <CardFooter className="flex flex-col gap-2">
                         <Button type="submit" className="w-full">Sign in</Button>
+                        <Link href="/create-account" className="hover:text-primary">
+                            Don't have an account?
+                        </Link>
                     </CardFooter>
                 </form>
             </Form>
