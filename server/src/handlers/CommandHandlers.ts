@@ -1,5 +1,6 @@
 import { CreateExamCommand } from "../commands/CreateExam.command";
 import { CreateExamItem } from "../commands/CreateExamItem.command";
+import { CreateRoomCommand } from "../commands/CreateRoom.command";
 import { CreateStudentIdentificationCommand } from "../commands/CreateStudentIdentification.command";
 import { CreateSubjectCommand } from "../commands/CreateSubject.command";
 import { CreateTaskCommand } from "../commands/CreateTask.command"; 
@@ -27,6 +28,7 @@ export const COMMAND_CLASSES = {
     DeleteSpecificExamItemImageCommand: "DeleteSpecificExamItemImageCommand",
     UpdateExamCommand: "UpdateExamCommand",
     UpdateExamStatusCommand: "UpdateExamStatusCommand",
+    CreateRoomCommand: "CreateRoomCommand",
 }
 
 export const CommandHandlers: Record<string, CommandHandler<any, any>> = {
@@ -44,4 +46,5 @@ export const CommandHandlers: Record<string, CommandHandler<any, any>> = {
     [COMMAND_CLASSES.DeleteSpecificExamItemImageCommand]: new DeleteSpecificExamItemImageCommand(),
     [COMMAND_CLASSES.UpdateExamCommand]: new UpdateExamCommand(),
     [COMMAND_CLASSES.UpdateExamStatusCommand]: new UpdateExamStatusCommand(),
+    [COMMAND_CLASSES.CreateRoomCommand]: new CreateRoomCommand(),
 };

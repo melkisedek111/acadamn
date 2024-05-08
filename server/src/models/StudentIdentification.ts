@@ -37,6 +37,7 @@ class StudentIdentificationModel extends PrismaClientHelper {
 	 * @returns TStudentIdentification | null
 	 */
 	async GetStudentIdentification(params: Partial<TStudentIdentification>): Promise<TStudentIdentification | null> {
+		console.log(params)
 		return await this.prismaQueryHandler<TStudentIdentification | null>(
 			async () => {
 				try {

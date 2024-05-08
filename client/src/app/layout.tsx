@@ -8,7 +8,12 @@ import { Toaster as SonnerToaster } from "sonner";
 import { Toaster } from "@/components/ui/toaster";
 import PageContainer from "@/components/page-container";
 
-
+import { Roboto } from 'next/font/google'
+ 
+const roboto = Roboto({
+  weight: '400',
+  subsets: ['latin'],
+})
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
@@ -23,7 +28,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <>
             <html lang="en" suppressHydrationWarning>
                 <head />
-                <body className={inter.className + " font-exo_2"}>
+                <body className={roboto.className + "font-exo_2"}>
                     <AuthProvider>
                         <NextTopLoader />
                         <ThemeProvider

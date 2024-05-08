@@ -13,10 +13,10 @@ export class CheckStudentIdQuery  implements QueryHandler<TCheckStudentIdentific
 
         if(!studentIdentification) throw new Error("Student ID does not exists");
 
-        const { studentId, id, isRegistered } = studentIdentification;
+        const { studentId, id, isRegistered, blockId, yearLevel } = studentIdentification;
 
         // if (isRegistered) throw new Error("Student ID is already registered");
 
-        return { studentId, id, isRegistered };
+        return { studentId, id, isRegistered, blockId, yearLevel };
     }
 }

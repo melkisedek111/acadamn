@@ -25,8 +25,8 @@ export default class StudentIdentificationController {
 	}
     static async createStudentIdentification(request: Request, response: Response) {
 		try {
-			const { studentId } = request.body as TCreateStudentIdentificationParams;
-			const studentIdentification = await mediator.sendCommand<TCreateStudentIdentificationParams, TStudentIdentification>(COMMAND_CLASSES.CreateStudentIdentificationCommand, { studentId, isRegistered: false });
+			const { studentId, blockId, yearLevel } = request.body as TCreateStudentIdentificationParams;
+			const studentIdentification = await mediator.sendCommand<TCreateStudentIdentificationParams, TStudentIdentification>(COMMAND_CLASSES.CreateStudentIdentificationCommand, { studentId, isRegistered: false, blockId, yearLevel  });
 			response.status(StatusCodes.OK).json(studentIdentification);
 		} catch (error: any) {
 			console.log(error.message);

@@ -14,40 +14,43 @@ datasource db {
 }
 
 model User {
-  id                      Int                   @id @default(autoincrement())
-  firstName               String
-  middleName              String?
-  lastName                String
-  dateOfBirth             String
-  role                    String
-  gender                  String
-  province                String
-  barangay                String
-  municipality            String
-  password                String
-  studentIdentificationId Int                   @unique()
-  studentIdentification   StudentIdentification @relation(fields: [studentIdentificationId], references: [id])
-  email                   String                @unique()
-  Exam                    Exam[]
-  UserExam                UserExam[]
-  createdAt               DateTime              @default(now())
-  updatedAt               DateTime              @updatedAt
-  InstructorSubjects      InstructorSubjects[]
+  id                          Int                           @id @default(autoincrement())
+  firstName                   String
+  middleName                  String?
+  lastName                    String
+  dateOfBirth                 String
+  role                        String
+  gender                      String
+  province                    String
+  barangay                    String
+  municipality                String
+  password                    String
+  studentIdentificationId     Int                           @unique()
+  studentIdentification       StudentIdentification         @relation(fields: [studentIdentificationId], references: [id])
+  email                       String                        @unique()
+  Exam                        Exam[]
+  UserExam                    UserExam[]
+  createdAt                   DateTime                      @default(now())
+  updatedAt                   DateTime                      @default(now()) @updatedAt
+  subjectStudentAssignment    SubjectStudentAssignment[]
+  subjectInstructorAssignment SubjectInstructorAssignment[]
 }
 
 model Subject {
-  id                 Int                  @id @default(autoincrement())
-  name               String
-  code               String
-  description        String
-  day                String[]
-  startTime          String
-  endTime            String
-  isActive           Boolean              @default(true)
-  createdAt          DateTime             @default(now())
-  updatedAt          DateTime             @updatedAt
-  Exam               Exam[]
-  InstructorSubjects InstructorSubjects[]
+  id                          Int                           @id @default(autoincrement())
+  name                        String
+  code                        String
+  description                 String
+  day                         String[]
+  startTime                   String
+  endTime                     String
+  isActive                    Boolean                       @default(true)
+  createdAt                   DateTime                      @default(now())
+  updatedAt                   DateTime                      @default(now()) @updatedAt
+  Exam                        Exam[]
+  subjectRoomAssignment       SubjectRoomAssignment[]
+  subjectStudentAssignment    SubjectStudentAssignment[]
+  subjectInstructorAssignment SubjectInstructorAssignment[]
 }
 
 model Exam {
@@ -64,7 +67,7 @@ model Exam {
   type               String
   isActive           Boolean              @default(true)
   createdAt          DateTime             @default(now())
-  updatedAt          DateTime             @updatedAt
+  updatedAt          DateTime             @default(now()) @updatedAt
   UserExam           UserExam[]
   ExamItem           ExamItem[]
   UserExamAnswerItem UserExamAnswerItem[]
@@ -78,7 +81,7 @@ model UserExam {
   exam      Exam     @relation(fields: [examId], references: [id])
   status    String
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime @default(now()) @updatedAt
 }
 
 model ExamItem {
@@ -98,7 +101,7 @@ model ExamItem {
   isDeleted          Boolean              @default(false)
   isActive           Boolean              @default(true)
   createdAt          DateTime             @default(now())
-  updatedAt          DateTime             @updatedAt
+  updatedAt          DateTime             @default(now()) @updatedAt
   UserExamAnswerItem UserExamAnswerItem[]
 }
 
@@ -110,18 +113,18 @@ model UserExamAnswerItem {
   examId     Int
   exam       Exam     @relation(fields: [examId], references: [id])
   createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  updatedAt  DateTime @default(now()) @updatedAt
 }
 
 model StudentIdentification {
   id           Int      @id @default(autoincrement())
   studentId    String   @unique()
-  blockId      Int?
-  block        Block?   @relation(fields: [blockId], references: [id])
-  yearLevel    Int?
-  isRegistered Boolean
+  blockId      Int
+  block        Block    @relation(fields: [blockId], references: [id])
+  yearLevel    Int
+  isRegistered Boolean  @default(false)
   createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  updatedAt    DateTime @default(now()) @updatedAt
   User         User?
 }
 
@@ -129,16 +132,47 @@ model Block {
   id                    Int                     @id @default(autoincrement())
   name                  String
   createdAt             DateTime                @default(now())
-  updatedAt             DateTime                @updatedAt
-  StudentIdentification StudentIdentification[]
+  updatedAt             DateTime                @default(now()) @updatedAt
+  studentIdentification StudentIdentification[]
 }
 
-model InstructorSubjects {
+model SubjectRoomAssignment {
+  id        Int      @id @default(autoincrement())
+  subjectId Int
+  subject   Subject  @relation(fields: [subjectId], references: [id])
+  roomId    Int
+  room      Room     @relation(fields: [roomId], references: [id])
+  day       String[]
+  startTime String
+  endTime   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+}
+
+model Room {
+  id                    Int                     @id @default(autoincrement())
+  name                  String
+  createdAt             DateTime                @default(now())
+  updatedAt             DateTime                @default(now()) @updatedAt
+  subjectRoomAssignment SubjectRoomAssignment[]
+}
+
+model SubjectStudentAssignment {
   id        Int      @id @default(autoincrement())
   subjectId Int
   subject   Subject  @relation(fields: [subjectId], references: [id])
   userId    Int
   user      User     @relation(fields: [userId], references: [id])
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime @default(now()) @updatedAt
+}
+
+model SubjectInstructorAssignment {
+  id        Int      @id @default(autoincrement())
+  subjectId Int
+  subject   Subject  @relation(fields: [subjectId], references: [id])
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
 }

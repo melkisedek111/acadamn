@@ -175,10 +175,15 @@ const yearLevelData = [
     },
 ]
 
-export function MyStudentTable() {
+type TMyStudentTableProps = {
+    subjects: TCustomSelectDropdownData[]
+}
+
+export function MyStudentTable({subjects}: TMyStudentTableProps) {
     const [sorting, setSorting] = useState<SortingState>([])
     const [selectedBlock, setSelectedBlock] = useState<string>("");
     const [selectedYearLevel, setSelectedYearLevel] = useState<string>("");
+    const [selectedSubject, setSelectedSubject] = useState<string>("");
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>(
         []
     )
@@ -217,6 +222,7 @@ export function MyStudentTable() {
                 />
                 <CustomSelectDropdown data={blockData} selectedData={selectedBlock} setSelectedData={setSelectedBlock} title={"Block"} placeholder="Select Block" />
                 <CustomSelectDropdown data={yearLevelData} selectedData={selectedYearLevel} setSelectedData={setSelectedYearLevel} title={"Year Level"} placeholder="Select Year Level" />
+                <CustomSelectDropdown data={subjects} selectedData={selectedSubject} setSelectedData={setSelectedSubject} title={"Subjects"} placeholder="Select Subject" />
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button variant="outline" className="ml-auto">

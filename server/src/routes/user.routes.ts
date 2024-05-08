@@ -8,7 +8,7 @@ import { ROLES } from '../utils/constants';
 
 const userRouter = Router();
 const middleware = [AuthMiddleware.AuthenticationTokenValidation, AuthMiddleware.AuthorizationVerification([ROLES.ADMIN])];
-userRouter.post('/create', [...middleware, UserMiddleware.UserFormValidation(createUserSchema)],  UserController.createUser);
+userRouter.post('/create', [UserMiddleware.UserFormValidation(createUserSchema)],  UserController.createUser);
 userRouter.post('/get-users', [...middleware, UserMiddleware.UserFormValidation(getUsersSchema)],  UserController.getUsers);
 
 

@@ -12,12 +12,12 @@ export class CreateStudentIdentificationCommand implements CommandHandler<TCreat
         const getStudentIdentification = await studentIdentificationModel.GetStudentIdentification({ studentId: params.studentId });
         if (getStudentIdentification) throw new Error("Student ID already exists");
 
-        const createdStudentIdentification = await studentIdentificationModel.CreateStudentIdentification({ isRegistered: false, studentId: params.studentId });
+        const createdStudentIdentification = await studentIdentificationModel.CreateStudentIdentification({ isRegistered: false, studentId: params.studentId, blockId: params.blockId, yearLevel: params.yearLevel });
 
 		if (!createdStudentIdentification) throw new Error("Failed to create student identification");
 
-		const { studentId, isRegistered } = createdStudentIdentification;
+		const { studentId, isRegistered, blockId, yearLevel } = createdStudentIdentification;
 
-		return { studentId, isRegistered  };
+		return { studentId, isRegistered, blockId, yearLevel  };
 	}
 }

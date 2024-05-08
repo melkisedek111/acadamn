@@ -102,7 +102,8 @@ export enum LinkTitle {
     DASHBOARD = "dashboard",
     EXAMS = "exams",
     SUBJECTS = "subjects",
-    MYSTUDENTS = "myStudents"
+    MYSTUDENTS = "myStudents",
+	ROOMS = "rooms"
 }
 
 export type TLinkDetails<T = {}> = {
@@ -125,5 +126,9 @@ export const LinkDetails: TLinkDetails = {
     [LinkTitle.MYSTUDENTS]: {
         title: "My Students",
         link: "/my-students",
+    },
+    [LinkTitle.ROOMS]: {
+        title: "Rooms",
+        link: "/rooms",
     }
 }
