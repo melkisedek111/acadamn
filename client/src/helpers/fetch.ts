@@ -8,7 +8,7 @@ export type TFetchApiError = {
     }[]
 }
 
-export const fetchApi = async <TOutput>(url: string, options: RequestInit = {}): Promise<TOutput | TFetchApiError> => {
+export const fetchApi = async <TOutput>(url: string, options: RequestInit = {}): Promise<TOutput> => {
 	const backendUrl = process.env.ENDPOINT_URL + url;
 
     const session = await getSession();
@@ -42,5 +42,5 @@ export const fetchApi = async <TOutput>(url: string, options: RequestInit = {}):
         }
     }
 
-    return response;
+    return response as TOutput;
 };

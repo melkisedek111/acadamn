@@ -1,17 +1,13 @@
+"use server";
+
 import CustomBreadcrumb from '@/components/custom-breadcrumb'
 import { LinkDetails } from '@/constants/app.constants'
-import React from 'react'
-import {
-    Table,
-    TableBody,
-    TableCaption,
-    TableCell,
-    TableFooter,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from "@/components/ui/table"
+import React, { Suspense } from 'react'
 import { AddRoomDialog } from './add-room-dialog'
+import { GetRoomsAndSubjectCountsQuery, TGetRoomsAndSubjectCounts } from './action';
+import RoomTable from './room-table';
+import { unstable_noStore } from 'next/cache';
+import Spinner from '@/components/spinner';
 
 const invoices = [
     {
@@ -59,7 +55,10 @@ const invoices = [
 ]
 
 
-const Rooms = () => {
+export default async function page() {
+    unstable_noStore();
+    const rooms: TGetRoomsAndSubjectCounts[] = await GetRoomsAndSubjectCountsQuery({});
+
     return (
         <div>
             <CustomBreadcrumb subLink={LinkDetails.rooms} />
@@ -68,30 +67,8 @@ const Rooms = () => {
                 <AddRoomDialog />
             </div>
             <div>
-                <Table>
-                    <TableCaption>A list of your recent invoices.</TableCaption>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead className="w-[100px]">ID</TableHead>
-                            <TableHead>Room</TableHead>
-                            <TableHead>Assign Subjects</TableHead>
-                            <TableHead className="text-right">Actions</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {invoices.map((invoice) => (
-                            <TableRow key={invoice.invoice}>
-                                <TableCell className="font-medium">{invoice.invoice}</TableCell>
-                                <TableCell>{invoice.paymentStatus}</TableCell>
-                                <TableCell>{invoice.paymentMethod}</TableCell>
-                                <TableCell className="text-right">{invoice.totalAmount}</TableCell>
-                            </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
+                <RoomTable rooms={rooms} />
             </div>
         </div>
     )
 }
-
-export default Rooms

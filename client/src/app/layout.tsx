@@ -9,10 +9,12 @@ import { Toaster } from "@/components/ui/toaster";
 import PageContainer from "@/components/page-container";
 
 import { Roboto } from 'next/font/google'
- 
+import { Suspense } from "react";
+import Spinner from "@/components/spinner";
+
 const roboto = Roboto({
-  weight: '400',
-  subsets: ['latin'],
+    weight: '400',
+    subsets: ['latin'],
 })
 const inter = Inter({ subsets: ["latin"] });
 
@@ -38,7 +40,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                             disableTransitionOnChange
                         >
                             <PageContainer>
-                                {children}
+                                {/* <Suspense fallback={<Spinner />}> */}
+                                    {children}
+                                {/* </Suspense > */}
                             </PageContainer>
                             <SonnerToaster />
                             <Toaster />

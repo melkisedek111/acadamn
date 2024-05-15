@@ -1,6 +1,7 @@
 import { CheckStudentIdQuery } from "../queries/CheckStudentId.query";
 import { GetExamItemQuery } from "../queries/GetExamItem.query";
 import { GetExamQuery } from "../queries/GetExams.query";
+import { GetRoomsAndSubjectCountsQuery } from "../queries/GetRoomsAndSubjectCounts.query";
 import { GetSubjectQuery } from "../queries/GetSubjects.query";
 import { GetTasksQuery } from "../queries/GetTask.query";
 import { GetUsersQuery } from "../queries/GetUsers.query";
@@ -13,6 +14,7 @@ export const QUERY_CLASSES = {
 	GetExamQuery: "GetExamQuery",
 	GetExamItemQuery: "GetExamItemQuery",
 	GetUsersQuery: "GetUsersQuery",
+	GetRoomsAndSubjectCountsQuery: "GetRoomsAndSubjectCountsQuery",
 };
 
 type TQueryHandlers =
@@ -22,7 +24,8 @@ type TQueryHandlers =
 	| typeof GetSubjectQuery
 	| typeof GetExamQuery
 	| typeof GetExamItemQuery
-	| typeof GetUsersQuery;
+	| typeof GetUsersQuery
+	| typeof GetRoomsAndSubjectCountsQuery
 
 export const QueryHandlers: Record<string, InstanceType<TQueryHandlers>> = {
 	GetTasksQuery: new GetTasksQuery(),
@@ -32,4 +35,5 @@ export const QueryHandlers: Record<string, InstanceType<TQueryHandlers>> = {
 	[QUERY_CLASSES.GetExamQuery]: new GetExamQuery(),
 	[QUERY_CLASSES.GetExamItemQuery]: new GetExamItemQuery(),
 	[QUERY_CLASSES.GetUsersQuery]: new GetUsersQuery(),
+	[QUERY_CLASSES.GetRoomsAndSubjectCountsQuery]: new GetRoomsAndSubjectCountsQuery(),
 };

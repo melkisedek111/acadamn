@@ -12,7 +12,10 @@ import {
 import {
 	TCreateRoomParams,
 	TGetRoomByParams,
+	TGetRoomsAndAssignedSubjects,
+	TGetRoomsAndSubjectCounts,
 	TRoom,
+	TUpdateRoomParams,
 } from "../types/types/room.type";
 
 class RoomModel extends PrismaClientHelper {
@@ -65,23 +68,84 @@ class RoomModel extends PrismaClientHelper {
 	}
 
 	/**
-	 * This function is used to get the exam
+	 * This function is used to get the rooms and their number of subjects assigned to the room
 	 * Updated by: Mel Ubalde @ Friday, March 29 26, 2024 3:49 PM
 	 * @param params
 	 * @returns TUser| null
 	 */
-	async GetRoomWithSubjectCounts(params: TGetRoomByParams): Promise<TRoom | null> {
-		return await this.prismaQueryHandler<TRoom | null>(async () => {
+	async GetRoomsWithSubjectCounts(params: TGetRoomByParams): Promise<TGetRoomsAndAssignedSubjects[]> {
+		return await this.prismaQueryHandler<TGetRoomsAndAssignedSubjects[]>(async () => {
 			try {
-				return await this.prisma.room.findFirst({
-					include: {
-						
-					}
+				return await this.prisma.room.findMany({
+					select: {
+						id: true,
+						name: true,
+						_count: {
+							select: {
+								subjectRoomAssignment: true
+							}
+						},
+						subjectRoomAssignment: {
+							orderBy: {
+								startTime: "asc"
+							},
+							select: {
+								id: true,
+								subject: {
+									select: {
+										id: true,
+										name: true
+									}
+								},
+								endTime: true,
+								startTime: true,
+								day: true
+							}
+						}
+					},
+					orderBy: [
+						{
+							id: "desc"
+						}
+					]
 				});
 			} catch {
 				throw new Error("Failed to get a room");
 			}
-		}, "GetRoomByParams");
+		}, "GetRoomsWithSubjectCounts");
+	}
+
+	/**
+	 * This function is used to update room and get the subject count as well
+	 * Updated by: Mel Ubalde @ Friday, March 29 26, 2024 3:49 PM
+	 * @param params
+	 * @returns TUser| null
+	 */
+	async UpdateRoom(params: TUpdateRoomParams): Promise<TGetRoomsAndSubjectCounts> {
+		const { id, ...otherParams } = params;
+		return await this.prismaQueryHandler<TGetRoomsAndSubjectCounts>(async () => {
+			try {
+				return await this.prisma.room.update({
+					where: {
+						id: params.id
+					},
+					data: {
+						...otherParams
+					},
+					select: {
+						id: true,
+						name: true,
+						_count: {
+							select: {
+								subjectRoomAssignment: true
+							}
+						}
+					}
+				});
+			} catch {
+				throw new Error("Failed to update of exam item");
+			}
+		}, "UpdateRoom");
 	}
 }
 
